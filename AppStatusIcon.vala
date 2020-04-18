@@ -6,17 +6,26 @@ public class Main {
     private StatusIcon trayicon;
     private Gtk.Menu menuSystem;
 
+    private TreeViewSample mainWindow;
+
     public AppStatusIcon() {
       /* Create tray icon */
       trayicon = new StatusIcon.from_stock(Stock.HOME);
       trayicon.set_tooltip_text ("Tray");
       trayicon.set_visible(true);
 
-      trayicon.activate.connect(about_clicked);
+      trayicon.activate.connect(show_window);
 
       create_menuSystem();
       trayicon.popup_menu.connect(menuSystem_popup);
 
+      this.mainWindow = new TreeViewSample();
+
+
+    }
+
+    private void show_window() {
+      mainWindow.show_all();
     }
 
     /* Create menu for right button */
@@ -48,12 +57,13 @@ public class Main {
   
   }
 
-
-  public static int main (string[] args) {
+  // https://stackoverflow.com/questions/5265167/pygtk-system-tray-icon-doesnt-work#5281034
+   // Where to go from here
+   // https://wiki.gnome.org/Projects/Vala/ListSample?highlight=%28%5CbVala%2FExamples%5Cb%29
+   // https://wiki.gnome.org/Projects/Vala/GTKSample
+   public static int main (string[] args) {
     Gtk.init(ref args);
     var App = new AppStatusIcon();
-    //App.hide();
-    //App.show_all();
     Gtk.main();
     return 0;
   }
