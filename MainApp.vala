@@ -6,7 +6,7 @@ public class Main {
     private StatusIcon trayicon;
     private Gtk.Menu menuSystem;
 
-    private TreeViewSample mainWindow;
+    private MainView mainWindow;
 
     public AppStatusIcon() {
       /* Create tray icon */
@@ -19,7 +19,7 @@ public class Main {
       create_menuSystem();
       trayicon.popup_menu.connect(menuSystem_popup);
 
-      this.mainWindow = new TreeViewSample();
+      this.mainWindow = new MainView();
 
 
     }

@@ -1,15 +1,37 @@
 using Gtk;
 
-public class TreeViewSample : Window {
+public class MainView : Window {
 
-    public TreeViewSample () {
+    private Gtk.ListStore listmodel;
+
+    public MainView () {
         this.title = "TreeView Sample";
         set_default_size (250, 100);
         var view = new TreeView ();
         setup_treeview (view);
-        add (view);
+        
+        var mainLayout = new Box(Gtk.Orientation.VERTICAL, 6);
+        add (mainLayout);
+
+        mainLayout.pack_start(view);
+
+
         //this.destroy.connect (hide_on_delete );
         this.delete_event.connect (hide_on_delete );
+
+        var add_button = new Button();
+        add_button.set_label("Add entry");
+        mainLayout.pack_start(add_button);
+
+        add_button.clicked.connect( () => {
+
+            print("Hello World!");
+            TreeIter iter;
+            this.listmodel.append (out iter);
+            var now = new DateTime.now_local ();
+            this.listmodel.set_value (iter, 4, now.to_string());
+    
+        });
     }
 
     private void destroy_me() {
@@ -24,8 +46,8 @@ public class TreeViewSample : Window {
          * look at the GTK+ API.
          */
 
-        var listmodel = new Gtk.ListStore (4, typeof (string), typeof (string),
-                                          typeof (string), typeof (string));
+        this.listmodel = new Gtk.ListStore (5, typeof (string), typeof (string),
+                                          typeof (string), typeof (string), typeof (string) );
         view.set_model (listmodel);
 
         view.insert_column_with_attributes (-1, "Account Name", new CellRendererText (), "text", 0);
@@ -49,6 +71,7 @@ public class TreeViewSample : Window {
   }
             });
         view.insert_column_with_attributes (-1, "Balance", cell, "text", 2, "foreground", 3);
+        view.insert_column_with_attributes (-1, "Date", new CellRendererText (), "text", 4);
 
         TreeIter iter;
         listmodel.append (out iter);
