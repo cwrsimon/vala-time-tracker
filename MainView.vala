@@ -31,7 +31,7 @@ public class MainView : Window {
         TreeIter iter;
         this.listmodel.append (out iter);
         var now = new DateTime.now_local();
-        this.listmodel.set_value (iter, 0, now.format("%x %H:%M"));
+        this.listmodel.set_value (iter, 0, now);
     }
 
     private void destroy_me() {
@@ -46,11 +46,21 @@ public class MainView : Window {
          * look at the GTK+ API.
          */
 
-        this.listmodel = new Gtk.ListStore (3, typeof (string), typeof (string),
+        this.listmodel = new Gtk.ListStore (3, typeof (DateTime), typeof (string),
                                           typeof (bool));
         view.set_model (listmodel);
 
-        var col1_idx = view.insert_column_with_attributes (-1, "Timestamp", new CellRendererText (), "text", 0);
+        var date_cell = new DateCellRenderer ();
+        //date_cell.editable = true;
+        /* 
+        date_cell.edited.connect ( (path, new_text) => {
+            print(path); print("\n");
+            print(new_text); print("\n");
+
+            print("======");
+        });
+        */
+        var col1_idx = view.insert_column_with_attributes (-1, "Timestamp", date_cell, "datetime", 0);
         var col1 = view.get_column(0);
         col1.resizable = true;
         col1.set_min_width(300);
@@ -62,13 +72,13 @@ public class MainView : Window {
                 
                 Gtk.TreePath tPath = new Gtk.TreePath.from_string(path);
                 var model = view.get_model();
-                 TreeIter myiter;
+                TreeIter myiter;
 
                  var res = model.get_iter(out myiter, tPath);
                 if (res == true) {
                  listmodel.set_value(myiter, 1, new_text);
                 }
-            });
+        });
         view.insert_column_with_attributes (-1, "Projekt", cell, "text", 1);
 
         var col2 = view.get_column(1);
