@@ -31,6 +31,9 @@ public class Main {
     /* Create menu for right button */
     public void create_menuSystem() {
       menuSystem = new Gtk.Menu();
+      var menuNew = new ImageMenuItem.from_stock(Stock.NEW, null);
+      menuNew.activate.connect( add_entry );
+      menuSystem.append(menuNew);
       var menuAbout = new ImageMenuItem.from_stock(Stock.ABOUT, null);
       menuAbout.activate.connect(about_clicked);
       menuSystem.append(menuAbout);
@@ -53,6 +56,10 @@ public class Main {
       about.set_copyright("vala");
       about.run();
       about.hide();
+    }
+
+    private void add_entry() {
+      this.mainWindow.add_entry();
     }
   
   }
