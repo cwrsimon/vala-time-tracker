@@ -5,8 +5,12 @@ public class MainView : Window {
 	private Gtk.ListStore listmodel;
 
 	private DateTime first_timestamp;
-	private Gtk.Label date_label_content;
+	private DateTime last_timestamp;
+	private Label date_label_content;
+	private Label remaining_label_content;
+	private TimeSpan target = 8 * TimeSpan.HOUR;
 
+	// https://developer.gnome.org/gnome-devel-demos/stable/beginner.vala.html.en
 	// https://wiki.gnome.org/Projects/Vala/CustomWidgetSamples
 	public MainView () {
 		this.title = "Vala Time Tracker";
@@ -16,10 +20,10 @@ public class MainView : Window {
 		this.date_label_content = new Gtk.Label("");
 
 		Gtk.Label target_label_heading = new Gtk.Label("Target:");
-		var target_label_content = new Gtk.Label("8.0h");
+		var target_label_content = new Gtk.Label(get_formatted_timespan(target));
 
 		Gtk.Label remaining_label_heading = new Gtk.Label("Remaining:");
-		var remaining_label_content = new Gtk.Label("8.0h");
+		this.remaining_label_content = new Gtk.Label("8.0h");
 
 		var header_bar = new Box(Gtk.Orientation.HORIZONTAL, 6);
 		header_bar.pack_start(date_label_heading, true, true, 2);
@@ -67,6 +71,103 @@ public class MainView : Window {
 		save_button.set_label("Save");
 		mainLayout.pack_start(save_button, false, false, 2);
 		//
+		save_button.clicked.connect( () => {
+			TreeIter iter;
+			if (listmodel.get_iter_first(out iter)) {
+
+			        print_iter(iter);
+			        while (listmodel.iter_next(ref iter)) {
+
+			                print_iter(iter);
+				}
+
+			}
+		});
+
+
+	}
+
+	private DateTime getDate(TreeIter iter) {
+		Value v = Value(typeof(DateTime));
+		listmodel.get_value(iter, 0, out v);
+		return (DateTime) v;
+	}
+
+	private bool getPause(TreeIter iter) {
+		Value v = Value(typeof(DateTime));
+		listmodel.get_value(iter, 2, out v);
+		return (bool) v;
+	}
+
+	private bool update() {
+		// How much time has passed since the last booking?
+		// FIXME
+		TimeSpan sofarsogood = 0;
+		TreeIter iter;
+		DateTime last_booking = null;
+		if (listmodel.get_iter_first(out iter)) {
+			DateTime prev_date = getDate(iter);
+			var prev_was_pause = false;
+			last_booking = prev_date;
+
+			var isPause = getPause(iter);
+			prev_was_pause = isPause;
+			if (!isPause) {
+				last_booking = prev_date;
+			} else {
+				prev_date = null;
+				last_booking = null;
+			}
+
+
+			while (listmodel.iter_next(ref iter)) {
+				DateTime next_date = getDate(iter);
+				var pause = getPause(iter);
+				if (!pause) {
+					last_booking = next_date;
+				}
+				// TODO Wenn der Vorgänger eine Pause war, dürfen wir nicht
+				// hinzuaddieren!
+				if (prev_date != null && !prev_was_pause) {
+					sofarsogood = sofarsogood + next_date.difference(prev_date);
+				}
+				prev_date = next_date;
+				prev_was_pause = pause;
+			}
+
+		}
+		print("So far so good:%s\n", get_formatted_timespan(sofarsogood));
+		//var last_booking = this.last_timestamp;
+		var now = new DateTime.now();
+		var diff = 0;
+		if (last_booking != null) {
+			now.difference(last_booking);
+		}
+		var remaining = this.target - diff - sofarsogood;
+		this.remaining_label_content.label = get_formatted_timespan(remaining);
+		return true;
+	}
+
+	private string get_formatted_timespan(TimeSpan remaining) {
+		var remaining_hours = (remaining / TimeSpan.HOUR).abs();
+		var remaining_minutes = ((remaining - (TimeSpan.HOUR * remaining_hours)) / TimeSpan.MINUTE).abs();
+		var remaining_seconds = (remaining
+		                         - (TimeSpan.HOUR * remaining_hours)
+		                         - (TimeSpan.MINUTE * remaining_minutes)) / 1000 / 1000;
+
+		return "%s' %s'' %s".
+		       printf(remaining_hours.to_string(), remaining_minutes.to_string(), remaining_seconds.to_string());
+	}
+
+	public void print_iter(TreeIter myiter) {
+		Value date = Value(typeof(DateTime));
+		listmodel.get_value(myiter, 0, out date);
+		Value desc = Value(typeof(string));
+		listmodel.get_value(myiter, 1, out desc);
+		Value pause = Value(typeof(bool));
+		listmodel.get_value(myiter, 2, out pause);
+		print("%s,%s,%d\n", ((DateTime) date).format_iso8601(),
+		      ((string) desc), ((bool) pause) ? 1 : 0);
 	}
 
 	public void add_entry() {
@@ -75,8 +176,11 @@ public class MainView : Window {
 		var now = new DateTime.now_local();
 		this.listmodel.set_value (iter, 0, now);
 
+		this.last_timestamp = now;
+
 		if (this.first_timestamp != null) return;
 		this.first_timestamp = now;
+		Timeout.add (1000, update);
 
 		this.date_label_content.label = now.format("%x");
 
@@ -87,12 +191,6 @@ public class MainView : Window {
 	}
 
 	private void setup_treeview (TreeView view) {
-
-		/*
-		 * Use ListStore to hold accountname, accounttype, balance and
-		 * color attribute. For more info on how TreeView works take a
-		 * look at the GTK+ API.
-		 */
 
 		this.listmodel = new Gtk.ListStore (3, typeof (DateTime), typeof (string),
 		                                    typeof (bool));
@@ -168,7 +266,9 @@ public class MainView : Window {
 		col3.set_resizable(true);
 		col3.set_min_width(100);
 
-
+		TreeIter iter;
+		listmodel.append(out iter);
+		listmodel.set(iter, 0, new DateTime.now_local(), 1, "Bla", 2, false );
 	}
 
 
