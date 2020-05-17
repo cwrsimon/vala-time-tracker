@@ -10,7 +10,7 @@ public class Main {
 
 		public AppStatusIcon() {
 			/* Create tray icon */
-			trayicon = new StatusIcon.from_stock(Stock.HOME);
+			trayicon = new StatusIcon.from_icon_name("appointment-soon");
 			trayicon.set_tooltip_text ("Tray");
 			trayicon.set_visible(true);
 

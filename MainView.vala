@@ -72,6 +72,7 @@ public class MainView : Window {
 		mainLayout.pack_start(save_button, false, false, 2);
 		//
 		save_button.clicked.connect( () => {
+			// TODO Herausschreiben hinzufügen
 			TreeIter iter;
 			if (listmodel.get_iter_first(out iter)) {
 
@@ -139,9 +140,9 @@ public class MainView : Window {
 		print("So far so good:%s\n", get_formatted_timespan(sofarsogood));
 		//var last_booking = this.last_timestamp;
 		var now = new DateTime.now();
-		var diff = 0;
+		TimeSpan diff = 0;
 		if (last_booking != null) {
-			now.difference(last_booking);
+			diff = now.difference(last_booking);
 		}
 		var remaining = this.target - diff - sofarsogood;
 		this.remaining_label_content.label = get_formatted_timespan(remaining);
@@ -149,8 +150,9 @@ public class MainView : Window {
 	}
 
 	private string get_formatted_timespan(TimeSpan remaining) {
-		var remaining_hours = (remaining / TimeSpan.HOUR).abs();
-		var remaining_minutes = ((remaining - (TimeSpan.HOUR * remaining_hours)) / TimeSpan.MINUTE).abs();
+		print("%s\n", remaining.to_string());
+		var remaining_hours = (remaining / TimeSpan.HOUR);
+		var remaining_minutes = ((remaining - (TimeSpan.HOUR * remaining_hours)) / TimeSpan.MINUTE);
 		var remaining_seconds = (remaining
 		                         - (TimeSpan.HOUR * remaining_hours)
 		                         - (TimeSpan.MINUTE * remaining_minutes)) / 1000 / 1000;
@@ -168,12 +170,15 @@ public class MainView : Window {
 		listmodel.get_value(myiter, 2, out pause);
 		print("%s,%s,%d\n", ((DateTime) date).format_iso8601(),
 		      ((string) desc), ((bool) pause) ? 1 : 0);
+
 	}
 
 	public void add_entry() {
 		TreeIter iter;
 		this.listmodel.append (out iter);
-		var now = new DateTime.now_local();
+		var now_tmp = new DateTime.now_local();
+		var now = new DateTime.local(now_tmp.get_year(), now_tmp.get_month(), now_tmp.get_day_of_month(),
+		                             now_tmp.get_hour(), now_tmp.get_minute(), 0);
 		this.listmodel.set_value (iter, 0, now);
 
 		this.last_timestamp = now;
