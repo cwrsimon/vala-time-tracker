@@ -28,7 +28,6 @@ public class Main {
 			mainWindow.show_all();
 		}
 
-		/* Create menu for right button */
 		public void create_menuSystem() {
 			menuSystem = new Gtk.Menu();
 			var menuNew = new ImageMenuItem.from_stock(Stock.NEW, null);
@@ -50,10 +49,10 @@ public class Main {
 
 		private void about_clicked() {
 			var about = new AboutDialog();
-			about.set_version("0.0.0");
-			about.set_program_name("Tray");
-			about.set_comments("Tray utility");
-			about.set_copyright("vala");
+			about.set_version("0.0.1");
+			about.set_program_name("vala-time-tracker");
+			about.set_comments("A simple rudimentary GTK-based time tracker for Linux and Windows.");
+			about.set_copyright("Christian Simon");
 			about.run();
 			about.hide();
 		}

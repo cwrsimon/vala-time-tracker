@@ -72,16 +72,31 @@ public class MainView : Window {
 		mainLayout.pack_start(save_button, false, false, 2);
 		//
 		save_button.clicked.connect( () => {
-			// TODO Herausschreiben hinzufügen
 			TreeIter iter;
+			string csv_data = null;
 			if (listmodel.get_iter_first(out iter)) {
-
-			        print_iter(iter);
+			        csv_data =  print_iter(iter);
 			        while (listmodel.iter_next(ref iter)) {
-
-			                print_iter(iter);
+						csv_data = csv_data + "\n" + print_iter(iter);
 				}
 
+			}
+			if (csv_data == null) return;
+			try {
+				var file = File.new_for_path ("out.csv");
+				// delete if file already exists
+				if (file.query_exists ()) {
+					file.delete ();
+				}
+				var dos = new DataOutputStream (file.create (FileCreateFlags.REPLACE_DESTINATION));
+				uint8[] data = csv_data.data;
+				long written = 0;
+				while (written < data.length) { 
+					// sum of the bytes of 'text' that already have been written to the stream
+					written += dos.write (data[written:data.length]);
+				}
+			} catch (Error e) {
+				stderr.printf ("%s\n", e.message);
 			}
 		});
 
@@ -102,7 +117,7 @@ public class MainView : Window {
 
 	private bool update() {
 		// How much time has passed since the last booking?
-		// FIXME
+		// TODO Simplify
 		TimeSpan sofarsogood = 0;
 		TreeIter iter;
 		DateTime last_booking = null;
@@ -127,8 +142,6 @@ public class MainView : Window {
 				if (!pause) {
 					last_booking = next_date;
 				}
-				// TODO Wenn der Vorgänger eine Pause war, dürfen wir nicht
-				// hinzuaddieren!
 				if (prev_date != null && !prev_was_pause) {
 					sofarsogood = sofarsogood + next_date.difference(prev_date);
 				}
@@ -137,7 +150,7 @@ public class MainView : Window {
 			}
 
 		}
-		print("So far so good:%s\n", get_formatted_timespan(sofarsogood));
+		//print("So far so good:%s\n", get_formatted_timespan(sofarsogood));
 		//var last_booking = this.last_timestamp;
 		var now = new DateTime.now();
 		TimeSpan diff = 0;
@@ -150,7 +163,7 @@ public class MainView : Window {
 	}
 
 	private string get_formatted_timespan(TimeSpan remaining) {
-		print("%s\n", remaining.to_string());
+		//print("%s\n", remaining.to_string());
 		var remaining_hours = (remaining / TimeSpan.HOUR);
 		var remaining_minutes = ((remaining - (TimeSpan.HOUR * remaining_hours)) / TimeSpan.MINUTE);
 		var remaining_seconds = (remaining
@@ -161,14 +174,14 @@ public class MainView : Window {
 		       printf(remaining_hours.to_string(), remaining_minutes.to_string(), remaining_seconds.to_string());
 	}
 
-	public void print_iter(TreeIter myiter) {
+	public string print_iter(TreeIter myiter) {
 		Value date = Value(typeof(DateTime));
 		listmodel.get_value(myiter, 0, out date);
 		Value desc = Value(typeof(string));
 		listmodel.get_value(myiter, 1, out desc);
 		Value pause = Value(typeof(bool));
 		listmodel.get_value(myiter, 2, out pause);
-		print("%s,%s,%d\n", ((DateTime) date).format_iso8601(),
+		return "%s,%s,%d".printf(((DateTime) date).format_iso8601(),
 		      ((string) desc), ((bool) pause) ? 1 : 0);
 
 	}
@@ -204,8 +217,8 @@ public class MainView : Window {
 		var date_cell = new DateCellRenderer ();
 		date_cell.editable = true;
 		date_cell.edited.connect ((path, new_text) => {
-			print("%s\n", path);
-			print("%s\n", new_text);
+			//print("%s\n", path);
+			//print("%s\n", new_text);
 
 			Gtk.TreePath tPath = new Gtk.TreePath.from_string(path);
 
@@ -214,16 +227,16 @@ public class MainView : Window {
 			// TODO Was sinnvolleres finden!
 			var base_iso = this.first_timestamp.format_iso8601();
 			// 2020-04-28T21:09:13+02
-			print("%s\n", base_iso);
+			//print("%s\n", base_iso);
 			var new_iso = base_iso.substring(0, 11) + new_text + ":00" + base_iso.substring(19);
-			print("%s\n", new_iso);
+			//print("%s\n", new_iso);
 			var new_value = new DateTime.from_iso8601(new_iso, null);
 
 			var res = model.get_iter(out myiter, tPath);
 			if (!res) return;
 			Value old_value = Value(typeof(DateTime));
 			listmodel.get_value(myiter, 0, out old_value);
-			print("%s\n", ((DateTime) old_value).format_iso8601());
+			//print("%s\n", ((DateTime) old_value).format_iso8601());
 			if (new_value != null) {
 			        listmodel.set_value(myiter, 0, new_value);
 			} else {
@@ -266,14 +279,14 @@ public class MainView : Window {
 			model.get_iter (out iter, tree_path);
 			listmodel.set_value (iter, 2, !toggle.active);
 		});
-		view.insert_column_with_attributes (-1, "Pause", toggle, "active", 2);
+		view.insert_column_with_attributes (-1, "Break", toggle, "active", 2);
 		var col3 = view.get_column(2);
 		col3.set_resizable(true);
 		col3.set_min_width(100);
 
-		TreeIter iter;
-		listmodel.append(out iter);
-		listmodel.set(iter, 0, new DateTime.now_local(), 1, "Bla", 2, false );
+		//TreeIter iter;
+		//listmodel.append(out iter);
+		//listmodel.set(iter, 0, new DateTime.now_local(), 1, "Bla", 2, false );
 	}
 
 
