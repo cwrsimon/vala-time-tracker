@@ -8,6 +8,7 @@ public class MainView : Window {
 	private DateTime last_timestamp;
 	private Label date_label_content;
 	private Label remaining_label_content;
+	private Label progress_label_content;
 	private TimeSpan target = 8 * TimeSpan.HOUR;
 
 	// https://developer.gnome.org/gnome-devel-demos/stable/beginner.vala.html.en
@@ -22,16 +23,29 @@ public class MainView : Window {
 		Gtk.Label target_label_heading = new Gtk.Label("Target:");
 		var target_label_content = new Gtk.Label(get_formatted_timespan(target));
 
-		Gtk.Label remaining_label_heading = new Gtk.Label("Remaining:");
-		this.remaining_label_content = new Gtk.Label("8.0h");
+		Gtk.Label progress_label_heading = new Gtk.Label("Progress:");
+		this.progress_label_content = new Gtk.Label("");
 
-		var header_bar = new Box(Gtk.Orientation.HORIZONTAL, 6);
+
+		Gtk.Label remaining_label_heading = new Gtk.Label("Remaining:");
+		this.remaining_label_content = new Gtk.Label("");
+
+
+		var header_bar = new Box(Gtk.Orientation.HORIZONTAL, 4);
 		header_bar.pack_start(date_label_heading, true, true, 2);
 		header_bar.pack_start(date_label_content, true, true, 2);
 		header_bar.pack_start(target_label_heading, true, true, 2);
 		header_bar.pack_start(target_label_content, true, true, 2);
-		header_bar.pack_start(remaining_label_heading, true, true, 2);
-		header_bar.pack_start(remaining_label_content, true, true, 2);
+
+		var header_bar_1 = new Box(Gtk.Orientation.HORIZONTAL, 2);
+		header_bar_1.pack_start(progress_label_heading, true, true, 2);
+		header_bar_1.pack_start(progress_label_content, true, true, 2);
+
+
+		var header_bar_2 = new Box(Gtk.Orientation.HORIZONTAL, 2);
+		header_bar_2.pack_start(remaining_label_heading, true, true, 2);
+		header_bar_2.pack_start(remaining_label_content, true, true, 2);
+
 
 		setup_treeview (view);
 
@@ -43,6 +57,9 @@ public class MainView : Window {
 		add (mainLayout);
 
 		mainLayout.pack_start(header_bar, false, false, 2);
+		mainLayout.pack_start(header_bar_1, false, false, 2);
+		mainLayout.pack_start(header_bar_2, false, false, 2);
+
 		mainLayout.pack_start(scrolling_container, true, true,2);
 
 		this.delete_event.connect (hide_on_delete );
@@ -200,7 +217,7 @@ public class MainView : Window {
 		if (this.first_timestamp != null) return;
 		this.first_timestamp = now;
 		Timeout.add (1000, update);
-
+		// TODO Allow 12h format
 		this.date_label_content.label = now.format("%x");
 
 	}

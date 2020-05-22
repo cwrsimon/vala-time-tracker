@@ -1,4 +1,6 @@
 using Gtk;
+using Intl;
+
 // from https://wiki.gnome.org/Projects/Vala/StatusIcon
 public class Main {
 
@@ -9,6 +11,9 @@ public class Main {
 		private MainView mainWindow;
 
 		public AppStatusIcon() {
+
+			Intl.setlocale(LocaleCategory.ALL, "");
+
 			/* TODO Test on Gnome, KDE, etc. */
 			trayicon = new StatusIcon.from_icon_name("appointment-new");
 			trayicon.set_tooltip_text ("Tray");
