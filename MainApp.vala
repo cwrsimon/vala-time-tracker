@@ -9,8 +9,8 @@ public class Main {
 		private MainView mainWindow;
 
 		public AppStatusIcon() {
-			/* Create tray icon */
-			trayicon = new StatusIcon.from_icon_name("appointment-soon");
+			/* TODO Test on Gnome, KDE, etc. */
+			trayicon = new StatusIcon.from_icon_name("appointment-new");
 			trayicon.set_tooltip_text ("Tray");
 			trayicon.set_visible(true);
 
@@ -30,13 +30,13 @@ public class Main {
 
 		public void create_menuSystem() {
 			menuSystem = new Gtk.Menu();
-			var menuNew = new ImageMenuItem.from_stock(Stock.NEW, null);
+			var menuNew = new Gtk.MenuItem.with_label("New entry");
 			menuNew.activate.connect( add_entry );
 			menuSystem.append(menuNew);
-			var menuAbout = new ImageMenuItem.from_stock(Stock.ABOUT, null);
+			var menuAbout = new Gtk.MenuItem.with_label("About");
 			menuAbout.activate.connect(about_clicked);
 			menuSystem.append(menuAbout);
-			var menuQuit = new ImageMenuItem.from_stock(Stock.QUIT, null);
+			var menuQuit = new Gtk.MenuItem.with_label("Quit");
 			menuQuit.activate.connect(Gtk.main_quit);
 			menuSystem.append(menuQuit);
 			menuSystem.show_all();
@@ -69,7 +69,7 @@ public class Main {
 	// https://wiki.gnome.org/Projects/Vala/GTKSample
 	public static int main (string[] args) {
 		Gtk.init(ref args);
-		var App = new AppStatusIcon();
+		var app = new AppStatusIcon();
 		Gtk.main();
 		return 0;
 	}

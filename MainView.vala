@@ -14,7 +14,7 @@ public class MainView : Window {
 	// https://wiki.gnome.org/Projects/Vala/CustomWidgetSamples
 	public MainView () {
 		this.title = "Vala Time Tracker";
-		set_default_size (1000, 400);
+		set_default_size (600, 500);
 		var view = new TreeView ();
 		Gtk.Label date_label_heading = new Gtk.Label("Date:");
 		this.date_label_content = new Gtk.Label("");
@@ -37,6 +37,7 @@ public class MainView : Window {
 
 		ScrolledWindow scrolling_container = new ScrolledWindow(null, null);
 		scrolling_container.add(view);
+		
 
 		var mainLayout = new Box(Gtk.Orientation.VERTICAL, 6);
 		add (mainLayout);
@@ -202,10 +203,6 @@ public class MainView : Window {
 
 		this.date_label_content.label = now.format("%x");
 
-	}
-
-	private void destroy_me() {
-		this.hide();
 	}
 
 	private void setup_treeview (TreeView view) {
