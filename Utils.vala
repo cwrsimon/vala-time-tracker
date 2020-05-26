@@ -11,8 +11,8 @@ public class Utils {
 		                         - (TimeSpan.HOUR * remaining_hours)
 		                         - (TimeSpan.MINUTE * remaining_minutes)) / 1000 / 1000;
 
-		return "%s' %s'' %s".
-		       printf(remaining_hours.to_string(), remaining_minutes.to_string(), remaining_seconds.to_string());
+		return ("%02" + int64.FORMAT + ":%02" + int64.FORMAT + ":%02" + int64.FORMAT).
+		       printf(remaining_hours, remaining_minutes, remaining_seconds);
 	}
 
 	

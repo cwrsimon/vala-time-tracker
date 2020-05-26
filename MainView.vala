@@ -30,7 +30,7 @@ public class MainView : ApplicationWindow {
 		Gtk.Label target_label_heading = new Gtk.Label("Target:");
 		target_label_heading.set_halign(Gtk.Align.END);
 
-		var target_label_content = new Gtk.Label(Utils.get_formatted_timespan(this.model.target));
+		var target_label_content = new Gtk.Label("");
 		target_label_content.set_halign(Gtk.Align.END);
 
 		Gtk.Label progress_label_heading = new Gtk.Label("Progress:");
@@ -98,12 +98,22 @@ public class MainView : ApplicationWindow {
 		save_button.clicked.connect( () => {
 			this.model.save_to_csv(this.model.csv_filename);
 		});
+
+		// If available load data from CSV
+		this.model.load_from_csv("2020-05-26.csv");
+
+		// TODO FIXME
+		if (this.model.first_timestamp != null) {
+			this.date_label_content.label = this.model.first_timestamp.format("%x");
+		}
+		target_label_content.label = Utils.get_formatted_timespan(this.model.target);
 	}
 
 	public void add_entry() {
 		this.model.add_now();
 		Timeout.add (1000, update);
 		// TODO Allow 12h format
+		// FIXME??
 		this.date_label_content.label = this.model.first_timestamp.format("%x");
 	}
 
@@ -195,10 +205,6 @@ public class MainView : ApplicationWindow {
 		var col3 = view.get_column(2);
 		col3.set_resizable(true);
 		col3.set_min_width(100);
-
-		//TreeIter iter;
-		//listmodel.append(out iter);
-		//listmodel.set(iter, 0, new DateTime.now_local(), 1, "Bla", 2, false );
 	}
 
 

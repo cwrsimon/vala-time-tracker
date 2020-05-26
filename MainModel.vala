@@ -16,8 +16,8 @@ public class MainModel : Gtk.ListStore {
 
 	private TimeSpan _target = 8 * TimeSpan.HOUR;
     public TimeSpan target {
-		// TODO implement a setter one day ...
-        get { return this._target; }
+		get { return this._target; }
+		set { this._target = value;}
     }
     
 
@@ -38,8 +38,8 @@ public class MainModel : Gtk.ListStore {
 		get_value(myiter, 1, out desc);
 		Value pause = Value(typeof(bool));
 		get_value(myiter, 2, out pause);
-		return "%s,%s,%d".printf(((DateTime) date).format_iso8601(),
-		      ((string) desc), ((bool) pause) ? 1 : 0);
+		return "%s\t%s\t%s".printf(((DateTime) date).format_iso8601(),
+		      ((string) desc), ((bool) pause).to_string() );
 
 	}
 
@@ -54,7 +54,8 @@ public class MainModel : Gtk.ListStore {
 		this.last_timestamp = now;
 
 		if (this.first_timestamp != null) return;
-		this.first_timestamp = now;
+		this.first_timestamp = new DateTime.local(now_tmp.get_year(), now_tmp.get_month(), now_tmp.get_day_of_month(),
+		0, 0, 0);
 	}
 
 	public DateTime getDate(TreeIter iter) {
@@ -87,6 +88,10 @@ public class MainModel : Gtk.ListStore {
 			csv_data = csv_data + "\n";
 		}
 		if (csv_data == null) return;
+		// add date
+		csv_data = csv_data + _first_timestamp.format_iso8601() + "\n";
+		// add target
+		csv_data = csv_data + this.target.to_string() + "\n";
 		try {
 			var file = File.new_for_path (filename);
 			// delete if file already exists
@@ -103,6 +108,45 @@ public class MainModel : Gtk.ListStore {
 		} catch (Error e) {
 			stderr.printf ("%s\n", e.message);
 		}
+	}
+
+	public void load_from_csv(string filename) {
+		var file = File.new_for_path (filename);
+			// delete if file already exists
+			if (!file.query_exists ()) {
+				return;
+			}
+			try {
+				// Open file for reading and wrap returned FileInputStream into a
+				// DataInputStream, so we can read line by line
+				var dis = new DataInputStream (file.read ());
+				string line;
+				// Read lines until end of file (null) is reached
+				while ((line = dis.read_line (null)) != null) {
+					string[] items = line.split("\t");
+					if (items.length == 3) {
+					//stdout.printf ("%s\n", line);
+					TreeIter iter;
+					append(out iter);
+					set(iter, 0, new DateTime.from_iso8601(items[0], null), 
+							  1, items[1], 
+							  2, bool.parse(items[2]) );
+					}
+					// TODO 
+					var date_candidate = new DateTime.from_iso8601(items[0], null);
+					if (date_candidate != null) {
+						this.first_timestamp = date_candidate;
+						continue;
+					}
+					var timespan = int64.parse(items[0]);
+					if (timespan != 0) {
+						this.target = timespan;
+					}
+				}
+			} catch (Error e) {
+				error ("%s", e.message);
+			}
+		
 	}
 
 }
