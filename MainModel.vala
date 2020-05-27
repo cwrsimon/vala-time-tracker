@@ -2,6 +2,8 @@ using Gtk;
 
 public class MainModel : Gtk.ListStore {
 
+	private File csv_directory;
+
 	private DateTime _last_timestamp;
     public DateTime last_timestamp {
 		get { return this._last_timestamp; }
@@ -23,13 +25,9 @@ public class MainModel : Gtk.ListStore {
     
 
 
-    public MainModel () {
+    public MainModel (File csv_directory) {
 		set_column_types( new Type[]{ typeof(DateTime), typeof(string), typeof(bool)  } ) ;
-	}
-	
-	public static MainModel from_csv(string csv) {
-		// TODO
-		return new MainModel();
+		this.csv_directory = csv_directory;
 	}
 
 	public string print_iter(TreeIter myiter) {
@@ -93,7 +91,7 @@ public class MainModel : Gtk.ListStore {
 		// add target
 		csv_data = csv_data + this.target.to_string() + "\n";
 		try {
-			var file = File.new_for_path (filename);
+			var file = this.csv_directory.get_child (filename);
 			// delete if file already exists
 			if (file.query_exists ()) {
 				file.delete ();
@@ -111,7 +109,7 @@ public class MainModel : Gtk.ListStore {
 	}
 
 	public void load_from_csv(string filename) {
-		var file = File.new_for_path (filename);
+		var file = this.csv_directory.get_child(filename);
 			// delete if file already exists
 			if (!file.query_exists ()) {
 				return;

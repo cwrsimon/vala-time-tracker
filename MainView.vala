@@ -8,6 +8,8 @@ public class MainView : ApplicationWindow {
 
 	private MainModel model;
 
+	private File csv_directory;
+
 	private uint timeout_handle;
 
 	// https://developer.gnome.org/gnome-devel-demos/stable/beginner.vala.html.en
@@ -17,10 +19,10 @@ public class MainView : ApplicationWindow {
 		set_default_size (600, 500);
 		var view = new TreeView ();
 
-		// TODO add home directory
-		//var home_dir = File.new_for_path (Environment.get_home_dir ());
+		// add home directory
+		init_csv_directory();
 		
-		this.model = new MainModel();
+		this.model = new MainModel(csv_directory);
 		view.set_model (this.model);
 
 		setup_treeview (view);
@@ -235,5 +237,18 @@ public class MainView : ApplicationWindow {
 		var col3 = view.get_column(2);
 		col3.set_resizable(true);
 		col3.set_min_width(100);
+	}
+
+	private void init_csv_directory() {
+		var home_dir = File.new_for_path (Environment.get_home_dir ());
+		var csv_directory = home_dir.get_child(".vala-time-tracker");
+		if (!csv_directory.query_exists()) {
+			try {
+			csv_directory.make_directory();
+			} catch (Error e) {
+				stderr.printf ("%s\n", e.message);
+			}
+		}
+		this.csv_directory = csv_directory;
 	}
 }
