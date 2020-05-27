@@ -15,6 +15,9 @@ public class Utils {
 		       printf(remaining_hours, remaining_minutes, remaining_seconds);
 	}
 
+	public static string get_todays_date() {
+		return new DateTime.now_local().format_iso8601().substring(0,10);
+	}
 	
 
 }

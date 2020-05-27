@@ -8,6 +8,8 @@ public class MainView : ApplicationWindow {
 
 	private MainModel model;
 
+	private uint timeout_handle;
+
 	// https://developer.gnome.org/gnome-devel-demos/stable/beginner.vala.html.en
 	// https://wiki.gnome.org/Projects/Vala/CustomWidgetSamples
 	public MainView () {
@@ -15,11 +17,13 @@ public class MainView : ApplicationWindow {
 		set_default_size (600, 500);
 		var view = new TreeView ();
 
+		// TODO add home directory
+		//var home_dir = File.new_for_path (Environment.get_home_dir ());
+		
 		this.model = new MainModel();
 		view.set_model (this.model);
 
 		setup_treeview (view);
-
 
 		Gtk.Label date_label_heading = new Gtk.Label("Date:");
 		date_label_heading.set_halign(Gtk.Align.END);
@@ -30,8 +34,17 @@ public class MainView : ApplicationWindow {
 		Gtk.Label target_label_heading = new Gtk.Label("Target:");
 		target_label_heading.set_halign(Gtk.Align.END);
 
-		var target_label_content = new Gtk.Label("");
-		target_label_content.set_halign(Gtk.Align.END);
+		var target_hour = new Gtk.Entry();
+		target_hour.set_width_chars(2);
+		var target_separator = new Gtk.Label(":");
+		var target_minutes = new Gtk.Entry();
+		target_minutes.set_width_chars(2);
+
+		Gtk.Box target_content = new Box(Gtk.Orientation.HORIZONTAL, 2);
+		target_content.pack_start(target_hour, false, false, 2);
+		target_content.pack_start(target_separator, false, false, 2);
+		target_content.pack_start(target_minutes, false, false, 2);
+		target_content.set_halign(Gtk.Align.END);
 
 		Gtk.Label progress_label_heading = new Gtk.Label("Progress:");
 		progress_label_heading.set_halign(Gtk.Align.END);
@@ -48,20 +61,20 @@ public class MainView : ApplicationWindow {
 		var header_bar = new Gtk.Grid();
 		header_bar.set_column_homogeneous(true);
 		header_bar.set_column_spacing(5);
+		// TODO find a different way ...
 		header_bar.set_margin_right(5);
 		header_bar.attach(date_label_heading, 0, 0, 1, 1);
 		header_bar.attach_next_to(date_label_content, date_label_heading, PositionType.RIGHT, 1, 1);
 		header_bar.attach(target_label_heading, 0, 1, 1, 1);
-		header_bar.attach_next_to(target_label_content, target_label_heading, PositionType.RIGHT, 1, 1);
+		header_bar.attach_next_to(target_content, target_label_heading, PositionType.RIGHT, 1, 1);
 
 		header_bar.attach_next_to(progress_label_heading, date_label_content, PositionType.RIGHT, 1, 1);
 		header_bar.attach_next_to(progress_label_content, progress_label_heading, PositionType.RIGHT, 1, 1);
-		header_bar.attach_next_to(remaining_label_heading, target_label_content, PositionType.RIGHT, 1, 1);
+		header_bar.attach_next_to(remaining_label_heading, target_content, PositionType.RIGHT, 1, 1);
 		header_bar.attach_next_to(remaining_label_content, remaining_label_heading, PositionType.RIGHT, 1, 1);
 
 		ScrolledWindow scrolling_container = new ScrolledWindow(null, null);
 		scrolling_container.add(view);
-
 
 		var mainLayout = new Box(Gtk.Orientation.VERTICAL, 5);
 		add (mainLayout);
@@ -87,7 +100,7 @@ public class MainView : ApplicationWindow {
 			Gtk.TreeModel model;
 			Gtk.TreeIter iter;
 			if (selection.get_selected(out model, out iter)) {
-			        this.model.remove(ref iter);
+				this.model.remove(ref iter);
 			}
 		});
 
@@ -99,19 +112,36 @@ public class MainView : ApplicationWindow {
 			this.model.save_to_csv(this.model.csv_filename);
 		});
 
-		// If available load data from CSV
-		this.model.load_from_csv("2020-05-26.csv");
+		// Load existing data for today, if available
+		this.model.load_from_csv(Utils.get_todays_date() + ".csv");
 
 		// TODO FIXME
 		if (this.model.first_timestamp != null) {
 			this.date_label_content.label = this.model.first_timestamp.format("%x");
 		}
-		target_label_content.label = Utils.get_formatted_timespan(this.model.target);
+		var formatted_target = Utils.get_formatted_timespan(this.model.target).split(":");
+		target_hour.set_text(formatted_target[0]);
+		target_minutes.set_text(formatted_target[1]);
+		target_hour.changed.connect( () => {
+			var new_value_hours = int64.parse(target_hour.text);
+			var old_value_minutes = int64.parse(target_minutes.text);
+			this.model.target = new_value_hours * TimeSpan.HOUR + old_value_minutes * TimeSpan.MINUTE ;
+		});
+
+		target_minutes.changed.connect( () => {
+			var value_hours = int64.parse(target_hour.text);
+			var value_minutes = int64.parse(target_minutes.text);
+			this.model.target = value_hours * TimeSpan.HOUR + value_minutes * TimeSpan.MINUTE ;
+		});
+		update();
 	}
+	
 
 	public void add_entry() {
 		this.model.add_now();
-		Timeout.add (1000, update);
+		if (this.timeout_handle == 0) {
+			Timeout.add (1000, update);
+		}
 		// TODO Allow 12h format
 		// FIXME??
 		this.date_label_content.label = this.model.first_timestamp.format("%x");
@@ -206,6 +236,4 @@ public class MainView : ApplicationWindow {
 		col3.set_resizable(true);
 		col3.set_min_width(100);
 	}
-
-
 }

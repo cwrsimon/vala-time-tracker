@@ -14,6 +14,7 @@ public class MainModel : Gtk.ListStore {
 		set { this._first_timestamp = value; }
     }
 
+	// by default, we must work 8 hours a day ;-)
 	private TimeSpan _target = 8 * TimeSpan.HOUR;
     public TimeSpan target {
 		get { return this._target; }
@@ -40,7 +41,6 @@ public class MainModel : Gtk.ListStore {
 		get_value(myiter, 2, out pause);
 		return "%s\t%s\t%s".printf(((DateTime) date).format_iso8601(),
 		      ((string) desc), ((bool) pause).to_string() );
-
 	}
 
 	public void add_now() {
