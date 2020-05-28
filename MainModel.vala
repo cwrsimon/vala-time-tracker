@@ -4,6 +4,12 @@ public class MainModel : Gtk.ListStore {
 
 	private File csv_directory;
 
+	private string _transportation = "other";
+	public string transportation {
+		get { return this._transportation; }
+		set { this._transportation = value; }
+	}
+
 	private DateTime _last_timestamp;
     public DateTime last_timestamp {
 		get { return this._last_timestamp; }
@@ -90,6 +96,8 @@ public class MainModel : Gtk.ListStore {
 		csv_data = csv_data + _first_timestamp.format_iso8601() + "\n";
 		// add target
 		csv_data = csv_data + this.target.to_string() + "\n";
+		// add transportation
+		csv_data = csv_data + this.transportation + "\n";
 		try {
 			var file = this.csv_directory.get_child (filename);
 			// delete if file already exists
@@ -139,7 +147,9 @@ public class MainModel : Gtk.ListStore {
 					var timespan = int64.parse(items[0]);
 					if (timespan != 0) {
 						this.target = timespan;
+						continue;
 					}
+					this.transportation = items[0];
 				}
 			} catch (Error e) {
 				error ("%s", e.message);

@@ -36,6 +36,17 @@ public class MainView : ApplicationWindow {
 		Gtk.Label target_label_heading = new Gtk.Label("Target:");
 		target_label_heading.set_halign(Gtk.Align.END);
 
+		Gtk.Label transportation_label_heading = new Gtk.Label("Type of Transportation:");
+		transportation_label_heading.set_halign(Gtk.Align.END);
+		
+		var transportation_combo = new Gtk.ComboBoxText();
+		transportation_combo.set_halign(Gtk.Align.END);
+		transportation_combo.insert(0, "Public", "Public");
+		transportation_combo.insert(1, "Car", "Car");
+		transportation_combo.insert(2, "Bike", "Bike");
+		transportation_combo.insert(3, "other", "other");
+		//transportation_combo.s
+		
 		var target_hour = new Gtk.Entry();
 		target_hour.set_width_chars(2);
 		var target_separator = new Gtk.Label(":");
@@ -74,6 +85,8 @@ public class MainView : ApplicationWindow {
 		header_bar.attach_next_to(progress_label_content, progress_label_heading, PositionType.RIGHT, 1, 1);
 		header_bar.attach_next_to(remaining_label_heading, target_content, PositionType.RIGHT, 1, 1);
 		header_bar.attach_next_to(remaining_label_content, remaining_label_heading, PositionType.RIGHT, 1, 1);
+		header_bar.attach(transportation_label_heading, 0, 2, 1, 1);
+		header_bar.attach_next_to(transportation_combo, transportation_label_heading, PositionType.RIGHT, 1, 1);
 
 		ScrolledWindow scrolling_container = new ScrolledWindow(null, null);
 		scrolling_container.add(view);
@@ -121,6 +134,7 @@ public class MainView : ApplicationWindow {
 		if (this.model.first_timestamp != null) {
 			this.date_label_content.label = this.model.first_timestamp.format("%x");
 		}
+		transportation_combo.set_active_id(this.model.transportation);
 		var formatted_target = Utils.get_formatted_timespan(this.model.target).split(":");
 		target_hour.set_text(formatted_target[0]);
 		target_minutes.set_text(formatted_target[1]);
@@ -134,6 +148,10 @@ public class MainView : ApplicationWindow {
 			var value_hours = int64.parse(target_hour.text);
 			var value_minutes = int64.parse(target_minutes.text);
 			this.model.target = value_hours * TimeSpan.HOUR + value_minutes * TimeSpan.MINUTE ;
+		});
+		// TODO Use widget synchronization one day...
+		transportation_combo.changed.connect( () => {
+			this.model.transportation = transportation_combo.get_active_text();
 		});
 		update();
 	}
@@ -183,13 +201,14 @@ public class MainView : ApplicationWindow {
 			}
 
 		}
-		this.progress_label_content.label = Utils.get_formatted_timespan(sofarsogood);
 		var now = new DateTime.now();
 		TimeSpan diff = 0;
 		if (last_booking != null) {
 			diff = now.difference(last_booking);
 		}
-		var remaining = this.model.target - diff - sofarsogood;
+		var progress = diff + sofarsogood;
+		var remaining = this.model.target - progress;
+		this.progress_label_content.label = Utils.get_formatted_timespan(progress);
 		this.remaining_label_content.label = Utils.get_formatted_timespan(remaining);
 		return true;
 	}

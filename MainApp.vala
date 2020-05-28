@@ -1,7 +1,7 @@
 using Gtk;
 using Intl;
 
-// from https://wiki.gnome.org/Projects/Vala/StatusIcon
+// based on https://wiki.gnome.org/Projects/Vala/StatusIcon
 public class Main {
 
 	class AppStatusIcon {
