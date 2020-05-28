@@ -1,3 +1,4 @@
+index.theme
 *image-missing*
 *appointment-new*
 *pan-down-*
