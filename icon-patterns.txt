@@ -1,0 +1,3 @@
+*image-missing*
+*appointment-new*
+*pan-down-*
