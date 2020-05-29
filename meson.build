@@ -5,5 +5,5 @@ executable('vala-time-tracker', ['src/MainApp.vala',
 			'src/MainModel.vala', 
 			'src/DateCellRenderer.vala',
 			 'src/Utils.vala'],
-	dependencies : gtkdep, install: true)
+	dependencies : gtkdep, install: true, gui_app:true)
 
