@@ -1,8 +1,9 @@
-project('playground', ['vala', 'c'])
+project('vala-time-tracker', ['vala', 'c'])
 gtkdep = dependency('gtk+-3.0')
-#appindicator = dependency('appindicator3-0.1')
-executable('TimeTracker', ['MainApp.vala', 'MainView.vala', 'MainModel.vala', 'DateCellRenderer.vala', 'Utils.vala'],
- dependencies : gtkdep, install: true)
-#executable('dummy', ['indicator-example.vala'],
-# dependencies : [gtkdep, appindicator], install: true)
+executable('vala-time-tracker', ['src/MainApp.vala', 
+			'src/MainView.vala', 
+			'src/MainModel.vala', 
+			'src/DateCellRenderer.vala',
+			 'src/Utils.vala'],
+	dependencies : gtkdep, install: true)
 
