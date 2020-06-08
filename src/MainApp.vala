@@ -4,33 +4,47 @@ using Intl;
 // based on https://wiki.gnome.org/Projects/Vala/StatusIcon
 public class Main {
 
-	class AppStatusIcon {
+	public class AppStatusIcon {
 		private StatusIcon trayicon;
 		private Gtk.Menu menuSystem;
 
 		private MainView mainWindow;
 
-		public AppStatusIcon() {
+		public AppStatusIcon(MainView mainView) {
 
 			Intl.setlocale(LocaleCategory.ALL, "");
 
 			/* TODO Test on Gnome, KDE, etc. */
 			trayicon = new StatusIcon.from_icon_name("appointment-new");
-			trayicon.set_tooltip_text ("Tray");
+			trayicon.set_tooltip_text ("Vala Time Tracker");
 			trayicon.set_visible(true);
 
 			trayicon.activate.connect(show_window);
-
+			//trayicon.button_press_event.connect(button_pressed);
 			create_menuSystem();
 			trayicon.popup_menu.connect(menuSystem_popup);
 
-			this.mainWindow = new MainView();
-
-
+			//this.mainWindow = new MainView();
+			this.mainWindow = mainView;
 		}
 
+		 
+		private bool button_pressed(Gtk.StatusIcon icon, Gdk.EventButton event) {
+			print("Button pressed %s\n", event.button.to_string());
+			if (event.button == 1) {
+				show_window();
+			}
+			//mainWindow.show();
+			return true;
+		}
+		
+
 		private void show_window() {
+			print ("Activate event\n");
+
 			mainWindow.show_all();
+			mainWindow.deiconify();
+
 		}
 
 		public void create_menuSystem() {
@@ -41,6 +55,10 @@ public class Main {
 			var menuAbout = new Gtk.MenuItem.with_label("About");
 			menuAbout.activate.connect(about_clicked);
 			menuSystem.append(menuAbout);
+			var menuShow = new Gtk.MenuItem.with_label("Show");
+			menuShow.activate.connect(show_window);
+			menuSystem.append(menuShow);
+
 			var menuQuit = new Gtk.MenuItem.with_label("Quit");
 			menuQuit.activate.connect(Gtk.main_quit);
 			menuSystem.append(menuQuit);
@@ -73,8 +91,11 @@ public class Main {
 	// https://wiki.gnome.org/Projects/Vala/ListSample?highlight=%28%5CbVala%2FExamples%5Cb%29
 	// https://wiki.gnome.org/Projects/Vala/GTKSample
 	public static int main (string[] args) {
+		print("Hallo Welt ...\n");
+		stdout.printf ("Laber\n");
 		Gtk.init(ref args);
-		var app = new AppStatusIcon();
+		var app = new MainView();
+		app.show_all();
 		Gtk.main();
 		return 0;
 	}

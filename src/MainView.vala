@@ -12,12 +12,17 @@ public class MainView : ApplicationWindow {
 
 	private uint timeout_handle;
 
+	private Main.AppStatusIcon icon;
+
 	// https://developer.gnome.org/gnome-devel-demos/stable/beginner.vala.html.en
 	// https://wiki.gnome.org/Projects/Vala/CustomWidgetSamples
 	public MainView () {
 		this.title = "Vala Time Tracker";
 		set_default_size (600, 500);
 		var view = new TreeView ();
+
+		this.icon = new Main.AppStatusIcon(this);
+		//hide_on_delete = true;
 
 		// add home directory
 		init_csv_directory();
@@ -97,6 +102,7 @@ public class MainView : ApplicationWindow {
 		mainLayout.pack_start(header_bar, false, false, 5);
 		mainLayout.pack_start(scrolling_container, true, true, 5);
 
+		this.window_state_event.connect ( state_changed_proc );
 		this.delete_event.connect (hide_on_delete );
 
 		var add_button = new Button();
@@ -156,6 +162,22 @@ public class MainView : ApplicationWindow {
 		update();
 	}
 	
+	private bool state_changed_proc ( Gtk.Widget widget, Gdk.EventWindowState  type) {
+		print("Hide Proc %s, %s\n", type.changed_mask.to_string(), 
+		type.new_window_state.to_string());
+		if (type.changed_mask == 130 && type.new_window_state == 2) {
+			//delete();
+			//prin
+			print("Jap!");
+			hide();
+			//iconify();
+			//destroy();
+			//this.withdraw();
+		} else if (type.changed_mask == 130 && type.new_window_state == 2) {
+			//deiconify();
+		}
+		return true;
+	}
 
 	public void add_entry() {
 		this.model.add_now();
