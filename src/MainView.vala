@@ -1,5 +1,8 @@
 using Gtk;
 
+// TODO Eine Gtk.Application verwenden
+// und beim SessionManaget anmelden
+// https://developer.gnome.org/gtk3/stable/GtkApplication.html#GtkApplication-query-end
 public class MainView : ApplicationWindow {
 
 	private Label date_label_content;
