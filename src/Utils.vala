@@ -16,8 +16,11 @@ public class Utils {
 	}
 
 	public static string get_todays_date() {
-		return new DateTime.now_local().format_iso8601().substring(0,10);
+		return get_formatted_date(new DateTime.now_local());
 	}
 	
+	public static string get_formatted_date(DateTime datetime) {
+		return datetime.format_iso8601().substring(0,10);
+	}
 
 }

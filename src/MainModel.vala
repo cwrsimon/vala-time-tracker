@@ -4,6 +4,9 @@ public class MainModel : Gtk.ListStore {
 
 	private File csv_directory;
 
+	public TimeSpan remaining {get; set; }
+	public TimeSpan progress {get; set; }
+
 	private string _transportation = "other";
 	public string transportation {
 		get { return this._transportation; }
@@ -27,7 +30,9 @@ public class MainModel : Gtk.ListStore {
     public TimeSpan target {
 		get { return this._target; }
 		set { this._target = value;}
-    }
+	}
+	
+
     
 
 
@@ -157,4 +162,54 @@ public class MainModel : Gtk.ListStore {
 		
 	}
 
+	// TODO Automatisch erkennen, ob wir von heute oder 
+	// von der Vergangenheit sprechen...
+	public void update_progress() {
+		// How much time has passed since the last booking?
+		// TODO Simplify
+		TimeSpan sofarsogood = 0;
+		TreeIter iter;
+		DateTime last_booking = null;
+		if (get_iter_first(out iter)) {
+			DateTime prev_date = getDate(iter);
+			var prev_was_pause = false;
+			last_booking = prev_date;
+
+			var isPause = getPause(iter);
+			prev_was_pause = isPause;
+			if (!isPause) {
+				last_booking = prev_date;
+			} else {
+				prev_date = null;
+				last_booking = null;
+			}
+
+			while (iter_next(ref iter)) {
+				DateTime next_date = getDate(iter);
+				var pause = getPause(iter);
+				if (!pause) {
+					last_booking = next_date;
+				}
+				if (prev_date != null && !prev_was_pause) {
+					sofarsogood = sofarsogood + next_date.difference(prev_date);
+				}
+				prev_date = next_date;
+				prev_was_pause = pause;
+			}
+
+		}
+		var now = new DateTime.now();
+		TimeSpan diff = 0;
+		//print("%s\n", Utils.get_formatted_date(now));
+		//print("%s\n", Utils.get_formatted_date(this.first_timestamp));
+		//string bla  = "bla";
+		
+		if (Utils.get_formatted_date(now) == Utils.get_formatted_date(this.first_timestamp)
+				&&  last_booking != null) {
+			diff = now.difference(last_booking);
+		}
+		this.progress = diff + sofarsogood;
+		this.remaining = target - progress;
+		
+	}
 }

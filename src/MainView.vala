@@ -136,6 +136,36 @@ public class MainView : ApplicationWindow {
 			this.model.save_to_csv(this.model.csv_filename);
 		});
 
+		var show_all_button = new Button();
+		show_all_button.set_label("Show all");
+		mainLayout.pack_start(show_all_button, false, false, 2);
+		show_all_button.clicked.connect( () => {
+			var todays_file = Utils.get_todays_date() + ".csv";
+			TimeSpan balance = 0;
+			try {
+			var enumerator = this.csv_directory.enumerate_children("standard::*,owner:GFile:user", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
+			FileInfo info = null;
+			while (((info = enumerator.next_file ()) != null)) {
+			if (info.get_file_type () == FileType.REGULAR) {
+				var filename = info.get_name();
+				if (filename == todays_file) {
+					continue;
+				}
+				print ("%s\n", filename);
+				MainModel newModel = new MainModel(this.csv_directory);
+				newModel.load_from_csv(info.get_name ());
+				newModel.update_progress();
+				print ("Progress: %s\n", Utils.get_formatted_timespan(newModel.progress));
+
+				print ("Remaining: %s\n", Utils.get_formatted_timespan(newModel.remaining));
+				balance = balance + (newModel.remaining * -1);
+			}
+			} } catch (Error e) {
+				print("Error: %s\n", e.message);
+			}
+			print("Work balance: %s\n", Utils.get_formatted_timespan(balance));
+		});
+
 		// Load existing data for today, if available
 		this.model.load_from_csv(Utils.get_todays_date() + ".csv");
 
@@ -193,48 +223,9 @@ public class MainView : ApplicationWindow {
 	}
 
 	private bool update() {
-		// How much time has passed since the last booking?
-		// TODO Simplify
-		TimeSpan sofarsogood = 0;
-		TreeIter iter;
-		DateTime last_booking = null;
-		if (this.model.get_iter_first(out iter)) {
-			DateTime prev_date = this.model.getDate(iter);
-			var prev_was_pause = false;
-			last_booking = prev_date;
-
-			var isPause = this.model.getPause(iter);
-			prev_was_pause = isPause;
-			if (!isPause) {
-				last_booking = prev_date;
-			} else {
-				prev_date = null;
-				last_booking = null;
-			}
-
-			while (this.model.iter_next(ref iter)) {
-				DateTime next_date = this.model.getDate(iter);
-				var pause = this.model.getPause(iter);
-				if (!pause) {
-					last_booking = next_date;
-				}
-				if (prev_date != null && !prev_was_pause) {
-					sofarsogood = sofarsogood + next_date.difference(prev_date);
-				}
-				prev_date = next_date;
-				prev_was_pause = pause;
-			}
-
-		}
-		var now = new DateTime.now();
-		TimeSpan diff = 0;
-		if (last_booking != null) {
-			diff = now.difference(last_booking);
-		}
-		var progress = diff + sofarsogood;
-		var remaining = this.model.target - progress;
-		this.progress_label_content.label = Utils.get_formatted_timespan(progress);
-		this.remaining_label_content.label = Utils.get_formatted_timespan(remaining);
+		this.model.update_progress();
+		this.progress_label_content.label = Utils.get_formatted_timespan(this.model.progress);
+		this.remaining_label_content.label = Utils.get_formatted_timespan(this.model.remaining);
 		return true;
 	}
 
