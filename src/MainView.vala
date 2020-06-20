@@ -99,8 +99,14 @@ public class MainView : ApplicationWindow {
 		ScrolledWindow scrolling_container = new ScrolledWindow(null, null);
 		scrolling_container.add(view);
 
+		var notebook_container = new Notebook();
+
+
 		var mainLayout = new Box(Gtk.Orientation.VERTICAL, 5);
-		add (mainLayout);
+
+		notebook_container.append_page(mainLayout, new Label("Today"));
+
+		add (notebook_container);
 
 		mainLayout.pack_start(header_bar, false, false, 5);
 		mainLayout.pack_start(scrolling_container, true, true, 5);
@@ -136,36 +142,7 @@ public class MainView : ApplicationWindow {
 			this.model.save_to_csv(this.model.csv_filename);
 		});
 
-		var show_all_button = new Button();
-		show_all_button.set_label("Show all");
-		mainLayout.pack_start(show_all_button, false, false, 2);
-		show_all_button.clicked.connect( () => {
-			var todays_file = Utils.get_todays_date() + ".csv";
-			TimeSpan balance = 0;
-			try {
-			var enumerator = this.csv_directory.enumerate_children("standard::*,owner:GFile:user", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
-			FileInfo info = null;
-			while (((info = enumerator.next_file ()) != null)) {
-			if (info.get_file_type () == FileType.REGULAR) {
-				var filename = info.get_name();
-				if (filename == todays_file) {
-					continue;
-				}
-				print ("%s\n", filename);
-				MainModel newModel = new MainModel(this.csv_directory);
-				newModel.load_from_csv(info.get_name ());
-				newModel.update_progress();
-				print ("Progress: %s\n", Utils.get_formatted_timespan(newModel.progress));
-
-				print ("Remaining: %s\n", Utils.get_formatted_timespan(newModel.remaining));
-				balance = balance + (newModel.remaining * -1);
-			}
-			} } catch (Error e) {
-				print("Error: %s\n", e.message);
-			}
-			print("Work balance: %s\n", Utils.get_formatted_timespan(balance));
-		});
-
+		
 		// Load existing data for today, if available
 		this.model.load_from_csv(Utils.get_todays_date() + ".csv");
 
@@ -193,6 +170,56 @@ public class MainView : ApplicationWindow {
 			this.model.transportation = transportation_combo.get_active_text();
 		});
 		update();
+
+		var yesterday_layout = new Box(Gtk.Orientation.VERTICAL, 5);
+		notebook_container.append_page(yesterday_layout, new Label("Past days"));
+
+
+		var show_all_button = new Button();
+		show_all_button.set_label("Refresh");
+		
+		var text_view = new TextView();
+
+		ScrolledWindow scrolling_container_text = new ScrolledWindow(null, null);
+		scrolling_container_text.add(text_view);
+
+		yesterday_layout.add(new Label("Your work balance"));
+		yesterday_layout.pack_start(scrolling_container_text, true, true, 5);
+		yesterday_layout.pack_start(show_all_button, false, false, 2);
+
+		show_all_button.clicked.connect( () => {
+			text_view.get_buffer().text = "";
+			// TODO Brauchen wir hier einen StringBuilder, o.ä.??
+			var new_content = "";
+			var todays_file = Utils.get_todays_date() + ".csv";
+			TimeSpan balance = 0;
+			try {
+			var enumerator = this.csv_directory.enumerate_children("standard::*,owner:GFile:user", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
+			FileInfo info = null;
+			while (((info = enumerator.next_file ()) != null)) {
+			if (info.get_file_type () == FileType.REGULAR) {
+				var filename = info.get_name();
+				if (filename == todays_file) {
+					continue;
+				}
+				print ("%s\n", filename);
+				MainModel newModel = new MainModel(this.csv_directory);
+				newModel.load_from_csv(info.get_name ());
+				newModel.update_progress();
+				var progress_formatted = Utils.get_formatted_timespan(newModel.progress); 
+				print ("Progress: %s\n", progress_formatted);
+				var remaining_formatted = Utils.get_formatted_timespan(newModel.remaining);
+				print ("Remaining: %s\n", remaining_formatted);
+				balance = balance + (newModel.remaining * -1);
+				new_content = new_content + filename + "\t" + progress_formatted + "\t" + remaining_formatted + "\n";
+			}
+			} } catch (Error e) {
+				print("Error: %s\n", e.message);
+			}
+			new_content = new_content + "\nWork balance: " + Utils.get_formatted_timespan(balance); 
+			print("Work balance: %s\n", Utils.get_formatted_timespan(balance));
+			text_view.get_buffer().text = new_content;
+		});
 	}
 	
 	private bool state_changed_proc ( Gtk.Widget widget, Gdk.EventWindowState  type) {
@@ -201,7 +228,7 @@ public class MainView : ApplicationWindow {
 		if (type.changed_mask == 130 && type.new_window_state == 2) {
 			//delete();
 			//prin
-			print("Jap!");
+			//print("Jap!");
 			hide();
 			//iconify();
 			//destroy();
