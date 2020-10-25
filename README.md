@@ -13,9 +13,6 @@ pacman -Syu
 
 3. Clone this git repository:
 ```
-git clone https://github.com/cwr ...
-```
-
 4. Install the required packages from pkglist.txt:
 ```
 pacman -S --needed - < required-packages.txt
@@ -41,11 +38,6 @@ ninja -C build install
 
 8. Build a zippable distro:
 ```
-mkdir distro
-export DESTDIR=`pwd`/distro    
-ninja -C build install
-sh determineDepDlls.sh > required-dlls.txt
-sh copy-dlls.sh
-sh copy-icons.sh
-zip -r vala-time-tracker.zip distro/
+sh build-distro.sh
+
 ```
