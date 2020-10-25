@@ -11,14 +11,16 @@ http://www.msys2.org/
 pacman -Syu
 ```
 
-3. Clone this git repository:
-```
+3. Clone this git repository.
+
 4. Install the required packages from pkglist.txt:
+
 ```
 pacman -S --needed - < required-packages.txt
 ```
 
 5. Fire up meson and ninja:
+
 ```
 cd vala-time-tracker
 meson build
@@ -26,18 +28,20 @@ ninja -C build
 ```
 
 6. Test the build:
+
 ```
 cd build/src/
 ./TimeTracker.exe
 ```
 
 7. Install to /mingw64:
+
 ```
 ninja -C build install
 ```
 
 8. Build a zippable distro:
+
 ```
 sh build-distro.sh
-
 ```
