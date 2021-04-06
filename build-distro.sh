@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export distro_name=vala-time-tracker-0.2.0
+export distro_name=vala-time-tracker-0.3.0
 
 export target=`pwd`/distro/$distro_name/
 echo $target
